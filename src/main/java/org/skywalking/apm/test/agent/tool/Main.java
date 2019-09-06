@@ -29,6 +29,7 @@ public class Main {
             File descFile = new File(casePath, "testcase.desc");
             if (!descFile.exists()) {
                 casePath = new File(casePath, "data");
+                descFile = new File(casePath, "testcase.desc");
             }
 
             TestCaseDesc caseDesc = TestCaseDesc.Parser.parse(descFile);
