@@ -31,14 +31,6 @@ public class ConfigHelper {
         return System.getProperty("testDate");
     }
 
-    public static String agentBranch() {
-        return System.getProperty("agentBranch");
-    }
-
-    public static String agentCommit() {
-        return System.getProperty("agentCommit");
-    }
-
     public static String testCases() {
         String testCasesInput = System.getProperty("testCases", "");
         if (testCasesInput.length() > 0) {
@@ -72,6 +64,14 @@ public class ConfigHelper {
 
     public static String reportFilePath() {
         return System.getProperty("reportFilePath");
+    }
+
+    public static String agentBranch() {
+        return System.getProperty("agentBranch");
+    }
+
+    public static String agentCommit() {
+        return System.getProperty("agentCommitId");
     }
 
     public static String casesBranch() {

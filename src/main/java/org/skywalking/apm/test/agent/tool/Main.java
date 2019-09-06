@@ -26,7 +26,12 @@ public class Main {
                 continue;
             }
             File casePath = new File(testCasePath, aCase);
-            TestCaseDesc caseDesc = TestCaseDesc.Parser.parse(new File(casePath, "testcase.desc"));
+            File descFile = new File(casePath, "testcase.desc");
+            if (!descFile.exists()) {
+                casePath = new File(casePath, "data");
+            }
+
+            TestCaseDesc caseDesc = TestCaseDesc.Parser.parse(descFile);
             TestCase testCase = new TestCase(caseDesc.getTestComponents());
             try {
                 logger.info("start to assert data of test case[{}]", testCase.getCaseName());
