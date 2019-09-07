@@ -17,52 +17,50 @@ public class Main {
         logger.info("Begin to validate data.");
 
         Report report = new Report();
-        String[] testCases = ConfigHelper.testCases().split(",");
-
         String testCasePath = ConfigHelper.testCaseBaseDir();
-        // 校验所有插件
-        for (String aCase : testCases) {
-            if (aCase == null || aCase.length() == 0) {
-                continue;
-            }
-            File casePath = new File(testCasePath, aCase);
-            File descFile = new File(casePath, "testcase.desc");
-            if (!descFile.exists()) {
-                casePath = new File(casePath, "data");
-                descFile = new File(casePath, "testcase.desc");
-            }
 
-            TestCaseDesc caseDesc = TestCaseDesc.Parser.parse(descFile);
-            TestCase testCase = new TestCase(caseDesc.getTestComponents());
-            try {
-                logger.info("start to assert data of test case[{}]", testCase.getCaseName());
-                File actualData = new File(casePath, "actualData.yaml");
-                File expectedData = new File(casePath, "expectedData.yaml");
-                if (actualData.exists() && expectedData.exists()) {
-                    try {
-                        DataAssert.assertEquals(Data.Loader.loadData("expectedData.yaml", expectedData),
-                            Data.Loader.loadData("actualData.yaml", actualData));
-                        testCase.testedSuccessfully();
-                    } catch (AssertFailedException e) {
-                        logger.error("\nassert failed.\n{}\n", e.getCauseMessage());
+        if (ConfigHelper.isV2()) {
+            TestCaseDesc desc = TestCaseDesc.Parser.parse(new File(testCasePath, "testcase.desc"));
+            verify(new File(testCasePath), desc, report);
+        } else {
+            String[] testCases = ConfigHelper.testCases().split(",");
 
-                    }
-                } else {
-                    logger.error("assert failed. because actual data {} and expected data {}", actualData.exists() ? "founded" : "not founded", actualData.exists() ? "founded" : "not founded");
-                }
-            } catch (Exception e) {
-                logger.error("assert test case {} failed.", testCase.getCaseName(), e);
+            for (String aCase : testCases) {
+                File casePath = new File(testCasePath, aCase);
+                File descFile = new File(casePath, "testcase.desc");
+                verify(casePath, TestCaseDesc.Parser.parse(descFile), report);
             }
-
-            report.addTestCase(caseDesc.getProjectName(), caseDesc.getTestFramework(), testCase);
         }
 
-        //生成报告
         try {
             report.generateReport(ConfigHelper.reportFilePath());
         } catch (Exception e) {
             logger.error("Failed to generate report file", e);
         }
+    }
+
+    static void verify(File casePath, TestCaseDesc testCaseDesc, Report report) {
+        TestCase testCase = new TestCase(testCaseDesc.getTestComponents());
+        try {
+            logger.info("start to assert data of test case[{}]", testCase.getCaseName());
+            File actualData = new File(casePath, "actualData.yaml");
+            File expectedData = new File(casePath, "expectedData.yaml");
+
+            if (actualData.exists() && expectedData.exists()) {
+                try {
+                    DataAssert.assertEquals(Data.Loader.loadData("expectedData.yaml", expectedData),
+                            Data.Loader.loadData("actualData.yaml", actualData));
+                    testCase.testedSuccessfully();
+                } catch (AssertFailedException e) {
+                    logger.error("\nassert failed.\n{}\n", e.getCauseMessage());
+                }
+            } else {
+                logger.error("assert failed. because actual data {} and expected data {}", actualData.exists() ? "founded" : "not founded", actualData.exists() ? "founded" : "not founded");
+            }
+        } catch (Exception e) {
+            logger.error("assert test case {} failed.", testCase.getCaseName(), e);
+        }
+        report.addTestCase(testCaseDesc.getProjectName(), testCaseDesc.getTestFramework(), testCase);
     }
 
 }

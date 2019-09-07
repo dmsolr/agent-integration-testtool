@@ -62,6 +62,10 @@ public class ConfigHelper {
         return System.getProperty("testCasePath", "");
     }
 
+    public static boolean isV2() {
+        return Boolean.getBoolean("v2");
+    }
+
     public static String reportFilePath() {
         return System.getProperty("reportFilePath");
     }
